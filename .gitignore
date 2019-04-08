@@ -1,0 +1,4 @@
+.vscode/
+build*/
+!*/include/cypress/core/
+*kdev4

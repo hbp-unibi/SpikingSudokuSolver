@@ -1,0 +1,33 @@
+{
+	"neuron_params": {
+		"e_rev_E": 0.0,
+		"e_rev_I": -100.0,
+		"tau_syn_E": 2.0,
+		"tau_syn_I": 2.0,
+		"v_rest": -70.0,
+		"v_reset": -75.0,
+		"v_thresh": -60.0,
+		"tau_refrac": 2.0,
+		"tau_m": 10.0,
+		"cm": 0.3
+	},
+	"population": {
+		"number" : 2,
+		"weight_exh" : 0.5,
+		"weight_inh" : -0.7
+	},
+	"noise": {
+		"number" : 2,
+		"weight_rand" : 0.8,
+		"probability": 0.8,
+		"noise_rate" : 30.0
+	},
+	"trigger": {
+		"number" : 2,
+		"weight" : 0.7,
+		"trigger_rate" : 200.0
+	},	
+	"start" : 0.0,
+	"duration" : 5000.0,
+	"bin_size" : 10
+}
