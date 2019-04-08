@@ -121,6 +121,11 @@ if(BUILD_EXECUTABLE)
 	target_link_libraries(main 
 		utils
 		pthread)
+		
+    add_executable(parameter_eval source/executable/parameter_eval)
+	target_link_libraries(parameter_eval 
+		utils
+		pthread)
     
     add_executable(parameter_sweep source/executable/parameter_sweep.cpp)
 	target_link_libraries(parameter_sweep 
