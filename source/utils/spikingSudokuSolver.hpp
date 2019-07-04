@@ -77,7 +77,7 @@ public:
 	 * @param simulator simulator string
 	 */
 	virtual void run(const char *instance, const char *simulator,
-	                 bool cube = false);
+	                 bool cube = false, bool dot = false);
 
 	/**
 	 * adds filled out numbers to sudoku from results of a simulation
@@ -204,7 +204,7 @@ public:
 	 * @param simulator simulator string
 	 */
 	virtual void run(const char *instance, const char *simulator,
-	                 bool cube = false) override;
+	                 bool cube = false, bool dot = false) override;
 };
 
 class SSolveMirrorInhib : public SpikingSolverSinglePop {
@@ -237,8 +237,8 @@ public:
 	 */
 	void initialize(Sudoku sudokuGen) override;
 
-	void run(const char *instance, const char *simulator,
-	         bool cube = false) override;
+	void run(const char *instance, const char *simulator, bool cube = false,
+	         bool dot = false) override;
 };
 
 class SpikingSolverSingleNeuron : public SpikingSolverSinglePop {
@@ -275,5 +275,5 @@ public:
 	 * @param simulator simulator string
 	 */
 	virtual void run(const char *instance, const char *simulator,
-	                 bool cube = false) override;
+	                 bool cube = false, bool dot = false) override;
 };

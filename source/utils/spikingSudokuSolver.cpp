@@ -35,7 +35,7 @@ spikingSudokuSolver::spikingSudokuSolver() : netw()
 		}
 	}
 	// Json config;
-	m_config << ifs;
+	ifs >> m_config;
 }
 
 spikingSudokuSolver::spikingSudokuSolver(std::string parameter_file)
@@ -54,7 +54,7 @@ spikingSudokuSolver::spikingSudokuSolver(std::string parameter_file)
 		}
 	}
 	// Json config
-	m_config << ifs;
+	ifs >> m_config;
 }
 
 const Real &spikingSudokuSolver::duration() const { return m_duration; }
@@ -69,7 +69,7 @@ void spikingSudokuSolver::setConfig(string path)
 	if (!ifs.good()) {
 		throw std::runtime_error("Could not open config file");
 	}
-	m_config << ifs;
+	ifs >> m_config;
 }
 
 namespace {
@@ -268,7 +268,7 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen)
 }
 
 void spikingSudokuSolver::run(const char *, const char *simulator = "pynn.nest",
-                              bool cube)
+                              bool cube, bool dot)
 {
 	global_logger().min_level(LogSeverity::INFO);
 
@@ -308,6 +308,9 @@ void spikingSudokuSolver::run(const char *, const char *simulator = "pynn.nest",
 		network_spikes.push_back(row_spikes);
 	}
 	spikes = network_spikes;
+	if (dot) {
+		cypress::create_dot(netw, "Sudoku Network", "Sudoku");
+	}
 	if (cube) {
 		Json json;
 		convert_to_json(spikes, "sudoku", json, true);
@@ -596,16 +599,18 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen)
 	int num_neurons =
 	    m_pop_neurons_num * m_count_numbers * sudoku_height * sudoku_width;
 	std::shared_ptr<PopulationBase> pop;
-    if(!current_based){
-        pop =  std::make_shared<PopulationBase>(netw.create_population<IfCondExp>(
-	    num_neurons, neuro_params.parameter(), IfCondExpSignals({"spikes"}),
-	    "target"));
-    }
-    else{
-        pop =  std::make_shared<PopulationBase>(netw.create_population<IfCurrExp>(
-	    num_neurons, neuro_params.parameter(), IfCurrExpSignals({"spikes"}),
-	    "target"));
-    }
+	if (!current_based) {
+		pop =
+		    std::make_shared<PopulationBase>(netw.create_population<IfCondExp>(
+		        num_neurons, neuro_params.parameter(),
+		        IfCondExpSignals({"spikes"}), "target"));
+	}
+	else {
+		pop =
+		    std::make_shared<PopulationBase>(netw.create_population<IfCurrExp>(
+		        num_neurons, neuro_params.parameter(),
+		        IfCurrExpSignals({"spikes"}), "target"));
+	}
 
 	auto source = netw.create_population<SpikeSourcePoisson>(
 	    num_neurons,
@@ -724,7 +729,8 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen)
 	netw.add_connection(*pop, *pop, Connector::from_list(exc_connections));
 }
 
-void SpikingSolverSinglePop::run(const char *, const char *simulator, bool cube)
+void SpikingSolverSinglePop::run(const char *, const char *simulator, bool cube,
+                                 bool dot)
 {
 	global_logger().min_level(LogSeverity::INFO);
 
@@ -768,6 +774,10 @@ void SpikingSolverSinglePop::run(const char *, const char *simulator, bool cube)
 		network_spikes.push_back(row_spikes);
 	}
 	spikes = network_spikes;
+	if (dot) {
+		cypress::create_dot(netw, "Single Population Sudoku Network",
+		                    "SudokuSinglePop");
+	}
 
 	if (cube) {
 		Json json;
@@ -991,7 +1001,8 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen)
 	}
 }
 
-void SSolveMirrorInhib::run(const char *, const char *simulator, bool cube)
+void SSolveMirrorInhib::run(const char *, const char *simulator, bool cube,
+                            bool dot)
 {
 	global_logger().min_level(LogSeverity::INFO);
 
@@ -1033,6 +1044,10 @@ void SSolveMirrorInhib::run(const char *, const char *simulator, bool cube)
 		network_spikes.push_back(row_spikes);
 	}
 	spikes = network_spikes;
+	if (dot) {
+		cypress::create_dot(netw, "Mirror Neurons Sudoku Network",
+		                    "MirrorInhib");
+	}
 
 	if (cube) {
 		int inhib_neurons_num = (m_config["population"]["inhib_number"]);
@@ -1247,7 +1262,7 @@ void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen)
 	netw.add_connection(m_pop, m_pop, Connector::from_list(inhib_connections));
 }
 void SpikingSolverSingleNeuron::run(const char *, const char *simulator,
-                                    bool cube)
+                                    bool cube, bool dot)
 {
 	global_logger().min_level(LogSeverity::INFO);
 
@@ -1287,6 +1302,10 @@ void SpikingSolverSingleNeuron::run(const char *, const char *simulator,
 		network_spikes.push_back(row_spikes);
 	}
 	spikes = network_spikes;
+	if (dot) {
+		cypress::create_dot(netw, "Single Neuron Sudoku Network",
+		                    "SingleNeuron");
+	}
 
 	if (cube) {
 		Json json;
