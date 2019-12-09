@@ -30,9 +30,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Enable C++14 support
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
 
-
-find_package(PythonLibs 2.7 REQUIRED)
-
 # Enable all warnings on MSVC and GCC/Clang/Intel
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
