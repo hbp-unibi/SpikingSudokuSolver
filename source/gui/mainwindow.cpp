@@ -49,6 +49,8 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
 	simulatorBox->addItem(tr("pyNN.spiNNaker0.1"));
 	simulatorBox->addItem(tr("spikey"));
 	simulatorBox->addItem(tr("BrainScaleS"));
+	simulatorBox->addItem(tr("GeNN-CPU"));
+	simulatorBox->addItem(tr("GeNN-GPU"));
 	simulatorBox->setFixedSize(btnSize);
 
 	cubeBox = new QCheckBox("LEDCube");
@@ -443,6 +445,12 @@ void MainWindow::sudokuspikingsolver()
 		    "\"/wang/data/calibration/brainscales/default-2017-09-26-1\", "
 		    "\"neuron_size\" : 4,\"digital_weight\" : true,\"bandwidth\" : "
 		    "0.8}";
+	}
+	else if (simulator == "GeNN-CPU") {
+		simulator = "genn";
+	}
+	else if (simulator == "GeNN-GPU") {
+		simulator = "genn={\"gpu\":true}";
 	}
 
 	// Reset Sudoku solver --> Read parameters file
