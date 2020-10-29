@@ -713,14 +713,12 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen)
 						             fan_in_inh, inhib_connections, weight_inh,
 						             delay);
 						num_connections++;
-						num_connections++;
 					}
 				}
 				// Self-Connection
 
 				fixed_fan_in(start_id, start_id, m_pop_neurons_num, fan_in_exh,
 				             exc_connections, weight_exh, delay);
-				num_connections++;
 				num_connections++;
 			}
 		}
