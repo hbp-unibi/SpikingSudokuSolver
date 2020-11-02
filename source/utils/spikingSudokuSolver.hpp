@@ -62,13 +62,29 @@ public:
 	spikingSudokuSolver(std::string parameter_file);
 
 	/**
+	 * Constructor using a user-defined json parameter
+	 */
+	spikingSudokuSolver(Json config): m_config(config){};
+    virtual ~spikingSudokuSolver() = default;
+    
+    /**
 	 * initializes the solver
 	 * builds neuron populations and connections as well as source populations
 	 * for a given sudoku
 	 *
 	 * @param sudokuGen  A Sudoku from class sudoku
 	 */
-	virtual void initialize(Sudoku sudokuGen);
+    virtual void initialize(Sudoku sudokuGen);
+
+	/**
+	 * initializes the solver
+	 * builds neuron populations and connections as well as source populations
+	 * for a given sudoku into the given network object
+	 *
+	 * @param sudokuGen  A Sudoku from class sudoku
+     * @param netw Network instance
+	 */
+	virtual void initialize(Sudoku sudokuGen, cypress::Network& netw);
 
 	/**
 	 * Executing the network and preparing the spike data
@@ -194,6 +210,16 @@ public:
 	 * @param sudokuGen The Sudoku instance from which the network is created
 	 * from. It contains the dimensions of the network and the given numbers,
 	 * which are triggered by additional spike sources
+     * @param netw Network instance
+	 */
+	virtual void initialize(Sudoku sudokuGen, cypress::Network& netw) override;
+    
+	/**
+	 * Initializes the network: Construction of the spiking neural network
+	 *
+	 * @param sudokuGen The Sudoku instance from which the network is created
+	 * from. It contains the dimensions of the network and the given numbers,
+	 * which are triggered by additional spike sources
 	 */
 	virtual void initialize(Sudoku sudokuGen) override;
 
@@ -234,6 +260,16 @@ public:
 	 * @param sudokuGen The Sudoku instance from which the network is created
 	 * from. It contains the dimensions of the network and the given numbers,
 	 * which are triggered by additional spike sources
+     * @param netw Network instance
+	 */
+	void initialize(Sudoku sudokuGen, cypress::Network& netw) override;
+    
+	/**
+	 * Initializes the network: Construction of the spiking neural network
+	 *
+	 * @param sudokuGen The Sudoku instance from which the network is created
+	 * from. It contains the dimensions of the network and the given numbers,
+	 * which are triggered by additional spike sources
 	 */
 	void initialize(Sudoku sudokuGen) override;
 
@@ -258,6 +294,16 @@ public:
 	    : SpikingSolverSinglePop(parameter_file)
 	{
 	}
+
+	/**
+	 * Initializes the network: Construction of the spiking neural network
+	 *
+	 * @param sudokuGen The Sudoku instance from which the network is created
+	 * from. It contains the dimensions of the network and the given numbers,
+	 * which are triggered by additional spike sources
+     * @param netw Network instance
+	 */
+	virtual void initialize(Sudoku sudokuGen, cypress::Network& netw) override;
 
 	/**
 	 * Initializes the network: Construction of the spiking neural network

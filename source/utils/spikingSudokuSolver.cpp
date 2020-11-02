@@ -92,12 +92,14 @@ void convert_to_json(
 }
 }  // namespace
 
-void spikingSudokuSolver::initialize(Sudoku sudokuGen)
+void spikingSudokuSolver::initialize(Sudoku sudokuGen){
+	netw = Network();
+    initialize(sudokuGen, netw);
+}
+void spikingSudokuSolver::initialize(Sudoku sudokuGen, Network& net)
 {
-
 	// clear network and population array
 	population_array.clear();
-	netw = Network();
 
 	// Neuronparameter
 	NeuronParameter neuro_params(IfCondExp::inst(), m_config["neuron_params"]);
@@ -146,7 +148,7 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen)
 		for (int j = 0; j < sudoku_width; j++) {
 			help_vector_1d.clear();
 			for (int k = 0; k < count_numbers; k++) {
-				help_vector_1d.push_back(netw.create_population<IfCondExp>(
+				help_vector_1d.push_back(net.create_population<IfCondExp>(
 				    pop_neurons_num, neuro_params.parameter(),
 				    IfCondExpSignals({"spikes"})));
 			}
@@ -159,7 +161,7 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen)
 	for (int i = 0; i < sudoku_height; i++) {
 		for (int j = 0; j < sudoku_width; j++) {
 			for (int k = 0; k < count_numbers; k++) {
-				netw.add_connection(netw.create_population<SpikeSourcePoisson>(
+				net.add_connection(net.create_population<SpikeSourcePoisson>(
 				                        pop_neurons_num,
 				                        SpikeSourcePoissonParameters()
 				                            .rate(noise_rate)
@@ -174,7 +176,7 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen)
 	}
 
 	// Creating and connecting trigger sources
-	auto trigger = netw.create_population<SpikeSourcePoisson>(
+	auto trigger = net.create_population<SpikeSourcePoisson>(
 	    trigger_neurons_num,
 	    SpikeSourcePoissonParameters()
 	        .rate(trigger_rate)
@@ -185,7 +187,7 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen)
 		for (int j = 0; j < sudoku_width; j++) {
 			if (sudokuGen.getEntryInSquareBlank(i, j) != 0) {
 				int number = sudokuGen.getEntryInSquareBlank(i, j);
-				netw.add_connection(
+				net.add_connection(
 				    trigger, population_array[i][j][number - 1],
 				    Connector::all_to_all(weight_trigger, delay));
 				num_connections++;
@@ -197,17 +199,17 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen)
 	for (int f = 0; f < count_numbers; f++) {
 		for (int g = 0; g < sudoku_width; g++) {
 			for (int h = 0; h < sudoku_height; h++) {
-				netw.add_connection(
+				net.add_connection(
 				    population_array[h][g][f], population_array[h][g][f],
 				    Connector::fixed_fan_in(fan_in_exh, weight_exh, delay));
 				// for testing
 				num_connections++;
 				// inhibitory internumberconnections
 				for (int k = f + 1; k < count_numbers; k++) {
-					netw.add_connection(
+					net.add_connection(
 					    population_array[h][g][f], population_array[h][g][k],
 					    Connector::fixed_fan_in(fan_in_inh, weight_inh, delay));
-					netw.add_connection(
+					net.add_connection(
 					    population_array[h][g][k], population_array[h][g][f],
 					    Connector::fixed_fan_in(fan_in_inh, weight_inh, delay));
 					// for testing
@@ -215,10 +217,10 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen)
 				}
 				// inhibitory horizontal connections
 				for (int k = g + 1; k < sudoku_width; k++) {
-					netw.add_connection(
+					net.add_connection(
 					    population_array[h][g][f], population_array[h][k][f],
 					    Connector::fixed_fan_in(fan_in_inh, weight_inh, delay));
-					netw.add_connection(
+					net.add_connection(
 					    population_array[h][k][f], population_array[h][g][f],
 					    Connector::fixed_fan_in(fan_in_inh, weight_inh, delay));
 					// for testing
@@ -226,10 +228,10 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen)
 				}
 				// inhibitory vertical connections
 				for (int k = h + 1; k < sudoku_height; k++) {
-					netw.add_connection(
+					net.add_connection(
 					    population_array[h][g][f], population_array[k][g][f],
 					    Connector::fixed_fan_in(fan_in_inh, weight_inh, delay));
-					netw.add_connection(
+					net.add_connection(
 					    population_array[k][g][f], population_array[h][g][f],
 					    Connector::fixed_fan_in(fan_in_inh, weight_inh, delay));
 					// for testing
@@ -246,7 +248,7 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen)
 						for (int k = 0; k < block_width; k++) {
 							for (int l = 0; l < block_height; l++) {
 								if ((k != i) & (l != j)) {
-									netw.add_connection(
+									net.add_connection(
 									    population_array[h * block_height + j]
 									                    [g * block_width + i]
 									                    [f],
@@ -543,11 +545,14 @@ inline void fixed_fan_in(size_t start_id, size_t start_id2, size_t n_neurons,
 	}
 }
 
-void SpikingSolverSinglePop::initialize(Sudoku sudokuGen)
+void SpikingSolverSinglePop::initialize(Sudoku sudokuGen){
+	netw = Network();
+    initialize(sudokuGen, netw);
+}
+void SpikingSolverSinglePop::initialize(Sudoku sudokuGen, Network& net)
 {
 	// clear network and population array
 	population_array.clear();
-	netw = cypress::Network();
 
 	bool current_based = false;
 
@@ -601,18 +606,18 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen)
 	std::shared_ptr<PopulationBase> pop;
 	if (!current_based) {
 		pop =
-		    std::make_shared<PopulationBase>(netw.create_population<IfCondExp>(
+		    std::make_shared<PopulationBase>(net.create_population<IfCondExp>(
 		        num_neurons, neuro_params.parameter(),
 		        IfCondExpSignals({"spikes"}), "target"));
 	}
 	else {
 		pop =
-		    std::make_shared<PopulationBase>(netw.create_population<IfCurrExp>(
+		    std::make_shared<PopulationBase>(net.create_population<IfCurrExp>(
 		        num_neurons, neuro_params.parameter(),
 		        IfCurrExpSignals({"spikes"}), "target"));
 	}
 
-	auto source = netw.create_population<SpikeSourcePoisson>(
+	auto source = net.create_population<SpikeSourcePoisson>(
 	    num_neurons,
 	    SpikeSourcePoissonParameters()
 	        .rate(noise_rate)
@@ -620,12 +625,12 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen)
 	        .duration(m_duration),
 	    SpikeSourcePoissonSignals(), "noise");
 
-	netw.add_connection(source, *pop,
+	net.add_connection(source, *pop,
 	                    Connector::one_to_one(weight_rand, delay));
 	num_connections += m_count_numbers * sudoku_height * sudoku_width;
 
 	// Create and connect trigger sources
-	auto trigger = netw.create_population<SpikeSourcePoisson>(
+	auto trigger = net.create_population<SpikeSourcePoisson>(
 	    trigger_neurons_num,
 	    SpikeSourcePoissonParameters()
 	        .rate(trigger_rate)
@@ -638,9 +643,9 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen)
 				int number = sudokuGen.getEntryInSquareBlank(i, j) - 1;
 				int start_id = index(i, j, number);
 
-				PopulationView<IfCondExp> popview(netw, pop->pid(), start_id,
+				PopulationView<IfCondExp> popview(net, pop->pid(), start_id,
 				                                  start_id + m_pop_neurons_num);
-				netw.add_connection(
+				net.add_connection(
 				    trigger, popview,
 				    Connector::all_to_all(weight_trigger, delay));
 				num_connections++;
@@ -655,7 +660,7 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen)
 				int start_id = index(i, j, k);
 
 				// PopulationView<IfCondExp> popviewsource(
-				//   netw, m_pop.pid(), start_id, start_id + m_pop_neurons_num);
+				//   net, m_pop.pid(), start_id, start_id + m_pop_neurons_num);
 				// Row wise
 				for (int l = 0; l < sudoku_width; l++) {
 					if (l == j) {
@@ -723,8 +728,8 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen)
 			}
 		}
 	}
-	netw.add_connection(*pop, *pop, Connector::from_list(inhib_connections));
-	netw.add_connection(*pop, *pop, Connector::from_list(exc_connections));
+	net.add_connection(*pop, *pop, Connector::from_list(inhib_connections));
+	net.add_connection(*pop, *pop, Connector::from_list(exc_connections));
 }
 
 void SpikingSolverSinglePop::run(const char *, const char *simulator, bool cube,
@@ -786,12 +791,14 @@ void SpikingSolverSinglePop::run(const char *, const char *simulator, bool cube,
 		           .c_str());
 	}
 }
-
-void SSolveMirrorInhib::initialize(Sudoku sudokuGen)
+void SSolveMirrorInhib::initialize(Sudoku sudokuGen){
+	netw = Network();
+    initialize(sudokuGen, netw);
+}
+void SSolveMirrorInhib::initialize(Sudoku sudokuGen, Network& net)
 {
 	// clear network and population array
 	population_array.clear();
-	netw = cypress::Network();
 
 	// Neuronparameter
 	NeuronParameter neuro_params(IfFacetsHardware1::inst(),
@@ -831,22 +838,22 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen)
 
 	int num_neurons =
 	    m_pop_neurons_num * m_count_numbers * sudoku_height * sudoku_width;
-	auto pop = netw.create_population<IfFacetsHardware1>(
+	auto pop = net.create_population<IfFacetsHardware1>(
 	    num_neurons, neuro_params.parameter(),
 	    IfFacetsHardware1Signals({"spikes"}), "target");
 	int num_all_inhib_neurons =
 	    inhib_neurons_num * m_count_numbers * sudoku_height * sudoku_width;
-	auto pop_inhib = netw.create_population<IfFacetsHardware1>(
+	auto pop_inhib = net.create_population<IfFacetsHardware1>(
 	    num_all_inhib_neurons, neuro_params_inhib.parameter(),
 	    IfFacetsHardware1Signals({"spikes"}), "inhibit");
 
 	int num_all_self_neurons =
 	    self_neurons_num * m_count_numbers * sudoku_height * sudoku_width;
-	auto pop_self_exc = netw.create_population<IfFacetsHardware1>(
+	auto pop_self_exc = net.create_population<IfFacetsHardware1>(
 	    num_all_self_neurons, neuro_params_inhib.parameter(),
 	    IfFacetsHardware1Signals({"spikes"}), "self_exc");
 
-	auto source = netw.create_population<SpikeSourcePoisson>(
+	auto source = net.create_population<SpikeSourcePoisson>(
 	    noise_neurons_num * m_count_numbers * sudoku_height * sudoku_width,
 	    SpikeSourcePoissonParameters()
 	        .rate(noise_rate)
@@ -888,7 +895,7 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen)
 			}
 		}
 	}
-	netw.add_connection(source, pop, Connector::from_list(inputs));
+	net.add_connection(source, pop, Connector::from_list(inputs));
 
 	// Inhibitory connections
 	for (int i = 0; i < sudoku_height; i++) {
@@ -904,23 +911,23 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen)
 				    j * m_count_numbers * self_neurons_num +
 				    k * self_neurons_num;
 
-				PopulationView<IfCondExp> popview(netw, pop.pid(), start_id,
+				PopulationView<IfCondExp> popview(net, pop.pid(), start_id,
 				                                  start_id + m_pop_neurons_num);
 				PopulationView<IfCondExp> popview_inhib(
-				    netw, pop_inhib.pid(), start_id_inhib,
+				    net, pop_inhib.pid(), start_id_inhib,
 				    start_id_inhib + inhib_neurons_num);
 
-				netw.add_connection(popview, popview_inhib,
+				net.add_connection(popview, popview_inhib,
 				                    Connector::all_to_all(weight_exh, delay));
 
 				PopulationView<IfCondExp> popview_self(
-				    netw, pop_self_exc.pid(), start_id_self,
+				    net, pop_self_exc.pid(), start_id_self,
 				    start_id_self + self_neurons_num);
 				// Self-Connection
-				netw.add_connection(
+				net.add_connection(
 				    popview, popview_self,
 				    Connector::all_to_all(weight_exh_self, delay));
-				netw.add_connection(
+				net.add_connection(
 				    popview_self, popview,
 				    Connector::all_to_all(weight_exh_self, delay));
 				num_connections++;
@@ -932,9 +939,9 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen)
 					}
 					int start_id2 = index(i, l, k);
 					PopulationView<IfCondExp> popviewtar(
-					    netw, pop.pid(), start_id2,
+					    net, pop.pid(), start_id2,
 					    start_id2 + m_pop_neurons_num);
-					netw.add_connection(
+					net.add_connection(
 					    popview_inhib, popviewtar,
 					    Connector::all_to_all(weight_inh, delay));
 					num_connections++;
@@ -947,9 +954,9 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen)
 					}
 					int start_id2 = index(l, j, k);
 					PopulationView<IfCondExp> popviewtar(
-					    netw, pop.pid(), start_id2,
+					    net, pop.pid(), start_id2,
 					    start_id2 + m_pop_neurons_num);
-					netw.add_connection(
+					net.add_connection(
 					    popview_inhib, popviewtar,
 					    Connector::all_to_all(weight_inh, delay));
 					num_connections++;
@@ -962,9 +969,9 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen)
 					}
 					int start_id2 = index(i, j, l);
 					PopulationView<IfCondExp> popviewtar(
-					    netw, pop.pid(), start_id2,
+					    net, pop.pid(), start_id2,
 					    start_id2 + m_pop_neurons_num);
-					netw.add_connection(
+					net.add_connection(
 					    popview_inhib, popviewtar,
 					    Connector::all_to_all(weight_inh, delay));
 					num_connections++;
@@ -986,9 +993,9 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen)
 						    index(block_id_y * block_height + l,
 						          (block_id_x * block_width + m), k);
 						PopulationView<IfCondExp> popviewtar(
-						    netw, pop.pid(), start_id2,
+						    net, pop.pid(), start_id2,
 						    start_id2 + m_pop_neurons_num);
-						netw.add_connection(
+						net.add_connection(
 						    popview_inhib, popviewtar,
 						    Connector::all_to_all(weight_inh, delay));
 						num_connections++;
@@ -1106,11 +1113,14 @@ void SSolveMirrorInhib::run(const char *, const char *simulator, bool cube,
 	}
 }
 
-void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen)
+void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen){
+	netw = Network();
+    initialize(sudokuGen, netw);
+}
+void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen, Network& net)
 {
 	// clear network and population array
 	this->population_array.clear();
-	this->netw = cypress::Network();
 
 	// Neuronparameter
 	NeuronParameter neuro_params(IfCondExp::inst(), m_config["neuron_params"]);
@@ -1141,11 +1151,11 @@ void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen)
 	const vector<vector<int>> sudoku = sudokuGen.getSudokuBlank();
 
 	int num_neurons = m_count_numbers * sudoku_height * sudoku_width;
-	auto m_pop = netw.create_population<IfCondExp>(
+	auto m_pop = net.create_population<IfCondExp>(
 	    num_neurons, neuro_params.parameter(), IfCondExpSignals({"spikes"}),
 	    "target");
 
-	auto source = netw.create_population<SpikeSourcePoisson>(
+	auto source = net.create_population<SpikeSourcePoisson>(
 	    num_neurons,
 	    SpikeSourcePoissonParameters()
 	        .rate(noise_rate)
@@ -1154,16 +1164,16 @@ void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen)
 	    SpikeSourcePoissonSignals({"spikes"}), "noise");
 
 	Real delay = 0.0;
-	netw.add_connection(source, m_pop,
+	net.add_connection(source, m_pop,
 	                    Connector::one_to_one(weight_rand, delay));
 
 	// Self Connection
-	netw.add_connection(m_pop, m_pop, Connector::one_to_one(weight_exh, delay));
+	net.add_connection(m_pop, m_pop, Connector::one_to_one(weight_exh, delay));
 
 	num_connections += m_pop.size();
 
 	// Create and connect trigger sources
-	auto pop_trigger = netw.create_population<SpikeSourcePoisson>(
+	auto pop_trigger = net.create_population<SpikeSourcePoisson>(
 	    trigger_neurons_num,
 	    SpikeSourcePoissonParameters()
 	        .rate(trigger_rate)
@@ -1185,7 +1195,7 @@ void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen)
 			}
 		}
 	}
-	netw.add_connection(pop_trigger, m_pop, Connector::from_list(connections));
+	net.add_connection(pop_trigger, m_pop, Connector::from_list(connections));
 
 	std::vector<LocalConnection> inhib_connections;
 	// Inhibitory connections
@@ -1257,7 +1267,7 @@ void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen)
 			}
 		}
 	}
-	netw.add_connection(m_pop, m_pop, Connector::from_list(inhib_connections));
+	net.add_connection(m_pop, m_pop, Connector::from_list(inhib_connections));
 }
 void SpikingSolverSingleNeuron::run(const char *, const char *simulator,
                                     bool cube, bool dot)
