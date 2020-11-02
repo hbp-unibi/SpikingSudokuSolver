@@ -9,7 +9,6 @@
 #pragma once
 
 #include <cypress/cypress.hpp>
-
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -64,17 +63,17 @@ public:
 	/**
 	 * Constructor using a user-defined json parameter
 	 */
-	spikingSudokuSolver(Json config): m_config(config){};
-    virtual ~spikingSudokuSolver() = default;
-    
-    /**
+	spikingSudokuSolver(Json config) : m_config(config){};
+	virtual ~spikingSudokuSolver() = default;
+
+	/**
 	 * initializes the solver
 	 * builds neuron populations and connections as well as source populations
 	 * for a given sudoku
 	 *
 	 * @param sudokuGen  A Sudoku from class sudoku
 	 */
-    virtual void initialize(Sudoku sudokuGen);
+	virtual void initialize(Sudoku sudokuGen);
 
 	/**
 	 * initializes the solver
@@ -82,9 +81,9 @@ public:
 	 * for a given sudoku into the given network object
 	 *
 	 * @param sudokuGen  A Sudoku from class sudoku
-     * @param netw Network instance
+	 * @param netw Network instance
 	 */
-	virtual void initialize(Sudoku sudokuGen, cypress::Network& netw);
+	virtual void initialize(Sudoku sudokuGen, cypress::Network &netw);
 
 	/**
 	 * Executing the network and preparing the spike data
@@ -93,7 +92,8 @@ public:
 	 * @param simulator simulator string
 	 */
 	virtual void run(const char *instance, const char *simulator,
-	                 bool cube = false, bool dot = false);
+	                 bool cube = false, bool dot = false,
+	                 bool eval_only = false);
 
 	/**
 	 * adds filled out numbers to sudoku from results of a simulation
@@ -187,6 +187,8 @@ protected:
 		       number * m_pop_neurons_num;
 	};
 
+	std::shared_ptr<PopulationBase> m_pop;
+
 public:
 	/**
 	 * Constructor. Calls the constructor of the base class reading
@@ -205,15 +207,20 @@ public:
 	}
 
 	/**
+	 * Constructor using a user-defined json parameter
+	 */
+	SpikingSolverSinglePop(Json config) : spikingSudokuSolver(config){};
+
+	/**
 	 * Initializes the network: Construction of the spiking neural network
 	 *
 	 * @param sudokuGen The Sudoku instance from which the network is created
 	 * from. It contains the dimensions of the network and the given numbers,
 	 * which are triggered by additional spike sources
-     * @param netw Network instance
+	 * @param netw Network instance
 	 */
-	virtual void initialize(Sudoku sudokuGen, cypress::Network& netw) override;
-    
+	virtual void initialize(Sudoku sudokuGen, cypress::Network &netw) override;
+
 	/**
 	 * Initializes the network: Construction of the spiking neural network
 	 *
@@ -230,7 +237,8 @@ public:
 	 * @param simulator simulator string
 	 */
 	virtual void run(const char *instance, const char *simulator,
-	                 bool cube = false, bool dot = false) override;
+	                 bool cube = false, bool dot = false,
+	                 bool eval_only = false) override;
 };
 
 class SSolveMirrorInhib : public SpikingSolverSinglePop {
@@ -240,7 +248,8 @@ public:
 	 * config/parameters.json
 	 */
 	SSolveMirrorInhib()
-	    : SpikingSolverSinglePop("../config/parameters_mirror.json")
+	    : SpikingSolverSinglePop(
+	          std::string("../config/parameters_mirror.json"))
 	{
 	}
 
@@ -255,15 +264,20 @@ public:
 	}
 
 	/**
+	 * Constructor using a user-defined json parameter
+	 */
+	SSolveMirrorInhib(Json config) : SpikingSolverSinglePop(config){};
+
+	/**
 	 * Initializes the network: Construction of the spiking neural network
 	 *
 	 * @param sudokuGen The Sudoku instance from which the network is created
 	 * from. It contains the dimensions of the network and the given numbers,
 	 * which are triggered by additional spike sources
-     * @param netw Network instance
+	 * @param netw Network instance
 	 */
-	void initialize(Sudoku sudokuGen, cypress::Network& netw) override;
-    
+	void initialize(Sudoku sudokuGen, cypress::Network &netw) override;
+
 	/**
 	 * Initializes the network: Construction of the spiking neural network
 	 *
@@ -274,7 +288,7 @@ public:
 	void initialize(Sudoku sudokuGen) override;
 
 	void run(const char *instance, const char *simulator, bool cube = false,
-	         bool dot = false) override;
+	         bool dot = false, bool eval_only = false) override;
 };
 
 class SpikingSolverSingleNeuron : public SpikingSolverSinglePop {
@@ -296,14 +310,19 @@ public:
 	}
 
 	/**
+	 * Constructor using a user-defined json parameter
+	 */
+	SpikingSolverSingleNeuron(Json config) : SpikingSolverSinglePop(config){};
+
+	/**
 	 * Initializes the network: Construction of the spiking neural network
 	 *
 	 * @param sudokuGen The Sudoku instance from which the network is created
 	 * from. It contains the dimensions of the network and the given numbers,
 	 * which are triggered by additional spike sources
-     * @param netw Network instance
+	 * @param netw Network instance
 	 */
-	virtual void initialize(Sudoku sudokuGen, cypress::Network& netw) override;
+	virtual void initialize(Sudoku sudokuGen, cypress::Network &netw) override;
 
 	/**
 	 * Initializes the network: Construction of the spiking neural network
@@ -321,5 +340,6 @@ public:
 	 * @param simulator simulator string
 	 */
 	virtual void run(const char *instance, const char *simulator,
-	                 bool cube = false, bool dot = false) override;
+	                 bool cube = false, bool dot = false,
+	                 bool eval_only = false) override;
 };
