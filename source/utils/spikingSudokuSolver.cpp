@@ -99,7 +99,6 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen, Network &net)
 {
 	// clear network and population array
 	population_array.clear();
-	std::cout << m_config << std::endl;
 	// Neuronparameter
 	NeuronParameter neuro_params(IfCondExp::inst(), m_config["neuron_params"]);
 
@@ -271,8 +270,6 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen, Network &net)
 void spikingSudokuSolver::run(const char *, const char *simulator = "pynn.nest",
                               bool cube, bool dot, bool eval_only)
 {
-	global_logger().min_level(LogSeverity::INFO);
-
 	int count_numbers = block_height * block_width;
 
 	if (!eval_only) {
@@ -553,7 +550,6 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen)
 }
 void SpikingSolverSinglePop::initialize(Sudoku sudokuGen, Network &net)
 {
-	std::cout << m_config << std::endl;
 	// clear network and population array
 	population_array.clear();
 
@@ -737,8 +733,6 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen, Network &net)
 void SpikingSolverSinglePop::run(const char *, const char *simulator, bool cube,
                                  bool dot, bool eval_only)
 {
-	global_logger().min_level(LogSeverity::INFO);
-
 	m_count_numbers = block_height * block_width;
 
 	if (!eval_only) {
@@ -1014,8 +1008,6 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen, Network &net)
 void SSolveMirrorInhib::run(const char *, const char *simulator, bool cube,
                             bool dot, bool eval_only)
 {
-	global_logger().min_level(LogSeverity::INFO);
-
 	m_count_numbers = block_height * block_width;
 
 	if (!eval_only) {
@@ -1280,8 +1272,6 @@ void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen, Network &net)
 void SpikingSolverSingleNeuron::run(const char *, const char *simulator,
                                     bool cube, bool dot, bool eval_only)
 {
-	global_logger().min_level(LogSeverity::INFO);
-
 	m_count_numbers = block_height * block_width;
 	if (!eval_only) {
 		// Run the simulation for "duration" seconds
