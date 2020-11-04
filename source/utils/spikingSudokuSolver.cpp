@@ -603,16 +603,18 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen, Network &net)
 	int num_neurons =
 	    m_pop_neurons_num * m_count_numbers * sudoku_height * sudoku_width;
 	if (!current_based) {
-		m_pop =
-		    std::make_shared<PopulationBase>(net.create_population<IfCondExp>(
-		        num_neurons, neuro_params.parameter(),
-		        IfCondExpSignals({"spikes"}), "target"));
+		m_pop = std::make_shared<PopulationBase>(
+		    net, net.create_population<IfCondExp>(
+		                num_neurons, neuro_params.parameter(),
+		                IfCondExpSignals({"spikes"}), "target")
+		             .pid());
 	}
 	else {
-		m_pop =
-		    std::make_shared<PopulationBase>(net.create_population<IfCurrExp>(
-		        num_neurons, neuro_params.parameter(),
-		        IfCurrExpSignals({"spikes"}), "target"));
+		m_pop = std::make_shared<PopulationBase>(
+		    net, net.create_population<IfCurrExp>(
+		                num_neurons, neuro_params.parameter(),
+		                IfCurrExpSignals({"spikes"}), "target")
+		             .pid());
 	}
 
 	auto source = net.create_population<SpikeSourcePoisson>(
@@ -837,9 +839,10 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen, Network &net)
 	int num_neurons =
 	    m_pop_neurons_num * m_count_numbers * sudoku_height * sudoku_width;
 	m_pop = std::make_shared<PopulationBase>(
-	    net.create_population<IfFacetsHardware1>(
-	        num_neurons, neuro_params.parameter(),
-	        IfFacetsHardware1Signals({"spikes"}), "target"));
+	    net, net.create_population<IfFacetsHardware1>(
+	                num_neurons, neuro_params.parameter(),
+	                IfFacetsHardware1Signals({"spikes"}), "target")
+	             .pid());
 	int num_all_inhib_neurons =
 	    inhib_neurons_num * m_count_numbers * sudoku_height * sudoku_width;
 	auto pop_inhib = net.create_population<IfFacetsHardware1>(
@@ -1150,9 +1153,11 @@ void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen, Network &net)
 	const vector<vector<int>> sudoku = sudokuGen.getSudokuBlank();
 
 	int num_neurons = m_count_numbers * sudoku_height * sudoku_width;
-	m_pop = std::make_shared<PopulationBase>(net.create_population<IfCondExp>(
-	    num_neurons, neuro_params.parameter(), IfCondExpSignals({"spikes"}),
-	    "target"));
+	m_pop = std::make_shared<PopulationBase>(
+	    net,
+	    net.create_population<IfCondExp>(num_neurons, neuro_params.parameter(),
+	                                     IfCondExpSignals({"spikes"}), "target")
+	        .pid());
 
 	auto source = net.create_population<SpikeSourcePoisson>(
 	    num_neurons,
