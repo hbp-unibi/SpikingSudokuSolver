@@ -117,6 +117,9 @@ void spikingSudokuSolver::initialize(Sudoku sudokuGen, Network &net)
 	Real trigger_rate = Real(m_config["trigger"]["trigger_rate"]);
 
 	Real delay = 1.0;
+	if (m_config.find("delay") != m_config.end()) {
+		delay = m_config["delay"].get<Real>();
+	}
 
 	// Simulation-parameter
 	m_duration = m_config["duration"];
@@ -583,6 +586,9 @@ void SpikingSolverSinglePop::initialize(Sudoku sudokuGen, Network &net)
 	Real trigger_rate = Real(m_config["trigger"]["trigger_rate"]);
 
 	Real delay = 1.0;
+	if (m_config.find("delay") != m_config.end()) {
+		delay = m_config["delay"].get<Real>();
+	}
 
 	m_duration = m_config["duration"];
 	if (m_duration <= 1.0) {
@@ -864,6 +870,9 @@ void SSolveMirrorInhib::initialize(Sudoku sudokuGen, Network &net)
 	    SpikeSourcePoissonSignals(), "noise");
 
 	Real delay = 0.0;
+	if (m_config.find("delay") != m_config.end()) {
+		delay = m_config["delay"].get<Real>();
+	}
 	std::vector<LocalConnection> inputs;
 
 	std::uniform_real_distribution<Real> distr(0.0, 1.0);
@@ -1168,6 +1177,9 @@ void SpikingSolverSingleNeuron::initialize(Sudoku sudokuGen, Network &net)
 	    SpikeSourcePoissonSignals({"spikes"}), "noise");
 
 	Real delay = 0.0;
+	if (m_config.find("delay") != m_config.end()) {
+		delay = m_config["delay"].get<Real>();
+	}
 	net.add_connection(source, *m_pop,
 	                   Connector::one_to_one(weight_rand, delay));
 
